@@ -1,0 +1,98 @@
+Rem Project: Ball Game
+Rem Created: Monday, January 10, 2011
+
+Rem ***** Main Source File *****
+Phy Start
+
+Phy Set Fixed Timing 1.0 / 5
+Phy Set Gravity 0.0, -19.6, 0.0
+
+` Player Material: No Bounce
+Phy Make Material 1, "No Bounce"
+Phy Set Material Restitution 1, 0.0
+Phy Build Material 1
+
+Sync On : Sync Rate 30
+
+Set Ambient Light 100
+Color BackDrop 0
+
+Load Image "Base.jpg", 1
+Load Image "Hex.jpg", 2
+
+Global Level : Level = 1
+
+` Load the Level
+Load Object "Levels\Playground.x", Level
+`Load Object "Levels\Test Level.x", Level
+`Load Object "Levels\Drop.x", Level
+`Load Object "Levels\Box.x", Level
+
+Texture Object Level, 1
+Phy Make Rigid Body Static Mesh Level
+
+`Make Mesh From Object 1, Level
+`Phy Make Rigid Body Static Mesh Level
+`Delete Mesh 1
+
+Global Player : Player = 2
+
+` Make The Player
+Make Object Sphere Player, 40
+Position Object Player, 200, 500, 200
+Texture Object Player, 2
+Ghost Object On Player, 1
+
+Phy Make Rigid Body Dynamic Sphere Player
+
+Power# = 18
+RotateSpeed# = 2
+
+Null = Make Vector4(1)
+
+Do
+    ```````` Handle Player `````````
+    
+    If Keystate(17) `w key
+        Phy Add Rigid Body Force Player, Sin(Camera Angle Y()) * Power#, 0.0, Cos(Camera Angle Y()) * Power#, 5
+    EndIf
+    
+    If Keystate(31) `s key
+        Phy Add Rigid Body Force Player,Sin(Camera Angle Y())*-Power#,0.0,Cos(Camera Angle Y())*-Power#, 5
+    Endif
+    
+    If Keystate(32) `d key
+        Phy Add Rigid Body Force Player, Sin(Camera Angle Y()+90)*Power#,0.0,Cos(Camera Angle Y() + 90) * Power#, 5   
+    EndIf
+    
+    If Keystate(30) `a key
+        Phy Add Rigid Body Force Player, Sin(Camera Angle Y() - 90) * Power#, 0.0, Cos(Camera Angle Y() - 90) * Power#, 5
+    EndIf
+    
+    `Apply linear and angular damping if no movement keys are pressed (i.e. w,a,s,d)
+    If Keystate(17) = 0 and Keystate(30) = 0 and Keystate(31) = 0 and Keystate(32) = 0
+        Phy Set Rigid Body Linear Damping Player, 0.2
+        Phy Set Rigid Body Angular Damping Player, 0.2
+    Else
+        Phy Set Rigid Body Linear Damping Player, 0.0
+        Phy Set Rigid Body Angular Damping Player, 0.0
+    EndIf
+    
+    ```````` Handle Camera `````````
+    Position Camera Object Position X(Player), Object Position Y(Player) + 80, Object Position Z(Player)
+    
+    If KeyState(203) `left key
+        CamAngY# = WrapValue(Camera Angle Y(0) + RotateSpeed#)
+        YRotate Camera CamAngY#
+    Endif
+    
+    If KeyState(205) `Right key
+        CamAngY# = WrapValue(Camera Angle Y(0) - RotateSpeed#)
+        YRotate Camera CamAngY#
+    Endif
+    
+    Move Camera 0, -200
+    
+    Phy Update
+    Sync
+Loop
